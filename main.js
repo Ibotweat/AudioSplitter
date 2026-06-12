@@ -450,45 +450,86 @@ ipcMain.handle('check-for-update', async () => {
     });
 });
 
-// ─── Download and launch latest release installer ────────────────────────────
-ipcMain.handle('download-and-install-update', async (event, downloadUrl) => {
+// Helper to download file with redirect support and progress callback
+function downloadFile(url, destPath, onProgress) {
     const https = require('https');
-    const os = require('os');
-    const tmpPath = path.join(os.tmpdir(), 'AudioSplitter-Update.exe');
+    return new Promise((resolve, reject) => {
+        const getRequest = (currentUrl) => {
+            const req = https.get(currentUrl, { headers: { 'User-Agent': 'AudioSplitter-App' } }, (res) => {
+                if (res.statusCode === 301 || res.statusCode === 302) {
+                    getRequest(res.headers.location);
+                    return;
+                }
 
-    return new Promise((resolve) => {
-        const file = fs.createWriteStream(tmpPath);
-        const request = https.get(downloadUrl, { headers: { 'User-Agent': 'AudioSplitter-App' } }, (response) => {
-            // Handle redirects
-            if (response.statusCode === 302 || response.statusCode === 301) {
-                const redirectReq = https.get(response.headers.location, { headers: { 'User-Agent': 'AudioSplitter-App' } }, (res2) => {
-                    res2.pipe(file);
-                    file.on('finish', () => {
-                        file.close(() => {
-                            exec(`"${tmpPath}"`, (err) => {
-                                if (err) resolve({ success: false, error: err.message });
-                                else resolve({ success: true });
-                            });
-                        });
-                    });
+                if (res.statusCode !== 200) {
+                    reject(new Error(`Erreur HTTP ${res.statusCode}`));
+                    return;
+                }
+
+                const totalBytes = parseInt(res.headers['content-length'], 10);
+                let downloadedBytes = 0;
+                const file = fs.createWriteStream(destPath);
+
+                res.on('data', (chunk) => {
+                    downloadedBytes += chunk.length;
+                    if (totalBytes && onProgress) {
+                        const percent = Math.round((downloadedBytes / totalBytes) * 100);
+                        onProgress(percent);
+                    }
                 });
-                redirectReq.on('error', (err) => resolve({ success: false, error: err.message }));
-                return;
-            }
-            response.pipe(file);
-            file.on('finish', () => {
-                file.close(() => {
-                    const psCommand = `Start-Process -FilePath "${tmpPath}" -Verb RunAs`;
-                    exec(`powershell -Command "${psCommand}"`, (err) => {
-                        if (err) resolve({ success: false, error: err.message });
-                        else resolve({ success: true });
-                    });
+
+                res.pipe(file);
+
+                file.on('finish', () => {
+                    file.close(() => resolve());
+                });
+
+                file.on('error', (err) => {
+                    file.close();
+                    fs.unlink(destPath, () => {});
+                    reject(err);
                 });
             });
-        });
-        request.on('error', (err) => {
-            fs.unlink(tmpPath, () => {});
-            resolve({ success: false, error: err.message });
-        });
+
+            req.on('error', (err) => {
+                reject(err);
+            });
+
+            req.setTimeout(15000, () => {
+                req.destroy();
+                reject(new Error('Connexion expirée (Timeout).'));
+            });
+        };
+
+        getRequest(url);
     });
+}
+
+// ─── Download and launch latest release installer ────────────────────────────
+ipcMain.handle('download-and-install-update', async (event, downloadUrl) => {
+    const tmpPath = path.join(os.tmpdir(), 'AudioSplitter-Update.exe');
+
+    try {
+        await downloadFile(downloadUrl, tmpPath, (percent) => {
+            event.sender.send('update-download-progress', percent);
+        });
+
+        // Launch installer with administrator privileges (UAC prompt)
+        const psCommand = `Start-Process -FilePath "${tmpPath}" -Verb RunAs`;
+        exec(`powershell -Command "${psCommand}"`, (err) => {
+            if (err) {
+                console.error("Erreur lors du lancement de l'installateur:", err);
+            }
+        });
+
+        // Close the application immediately so files are not locked by the running process
+        setTimeout(() => {
+            app.quit();
+        }, 800);
+
+        return { success: true };
+    } catch (err) {
+        console.error("Erreur mise à jour:", err);
+        return { success: false, error: err.message };
+    }
 });

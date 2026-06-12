@@ -2461,7 +2461,7 @@ async function checkForAppUpdate() {
     }
 }
 
-// Wire update button
+// Wire update button and progress listener
 const _updateBtn = document.getElementById('btn-update');
 if (_updateBtn) {
     _updateBtn.addEventListener('click', async () => {
@@ -2470,20 +2470,42 @@ if (_updateBtn) {
             return;
         }
         _updateBtn.disabled = true;
-        _updateBtn.querySelector('span').textContent = '⏳ Téléchargement...';
+        _updateBtn.style.animation = 'none'; // Disable pulsing animation while downloading
+        _updateBtn.style.background = 'linear-gradient(90deg, #10b981 0%, #3f3f46 0%)';
+        _updateBtn.querySelector('span').textContent = '⏳ Téléchargement : 0%';
+        showToast('⏳ Démarrage du téléchargement de la mise à jour...');
+
         try {
             const result = await window.electron.downloadAndInstallUpdate(_latestReleaseDownloadUrl);
             if (result.success) {
-                showToast('✅ Mise à jour téléchargée ! Suivez les instructions de l\'installateur.');
+                showToast("✅ Téléchargement terminé ! Fermeture de l'application et lancement de l'installateur...", 6000);
+                _updateBtn.querySelector('span').textContent = 'Lancement de l\'installation...';
+                _updateBtn.style.background = '#10b981';
             } else {
                 showToast(`❌ Erreur mise à jour : ${result.error}`);
                 _updateBtn.disabled = false;
-                _updateBtn.querySelector('span').textContent = 'Réessayer';
+                _updateBtn.style.animation = 'pulse-update 2s ease-in-out infinite';
+                _updateBtn.style.background = '';
+                _updateBtn.querySelector('span').textContent = 'Réessayer la mise à jour';
             }
         } catch(e) {
             showToast(`❌ Erreur : ${e.message}`);
             _updateBtn.disabled = false;
+            _updateBtn.style.animation = 'pulse-update 2s ease-in-out infinite';
+            _updateBtn.style.background = '';
+            _updateBtn.querySelector('span').textContent = 'Réessayer la mise à jour';
         }
+    });
+}
+
+// Register update progress listener
+if (window.electron && window.electron.onUpdateProgress) {
+    window.electron.onUpdateProgress((percent) => {
+        if (_updateBtn) {
+            _updateBtn.querySelector('span').textContent = `Téléchargement : ${percent}%`;
+            _updateBtn.style.background = `linear-gradient(90deg, #10b981 0%, #10b981 ${percent}%, #3f3f46 ${percent}%, #3f3f46 100%)`;
+        }
+        showToast(`⏳ Téléchargement de la mise à jour : ${percent}%...`, 3000);
     });
 }
 

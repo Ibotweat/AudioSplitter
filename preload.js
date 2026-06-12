@@ -14,6 +14,7 @@ window.electron = {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   checkForUpdate: () => ipcRenderer.invoke('check-for-update'),
   downloadAndInstallUpdate: (url) => ipcRenderer.invoke('download-and-install-update', url),
+  onUpdateProgress: (callback) => ipcRenderer.on('update-download-progress', (e, percent) => callback(percent)),
   getCPUUsage: () => ipcRenderer.invoke('get-cpu-usage')
 };
 
