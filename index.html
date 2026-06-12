@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioSplitter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="logo.png" alt="Logo" class="app-logo">
+                <h1>AudioSplitter</h1>
+            </div>
+            <nav>
+                <div class="nav-item active" id="nav-routing">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6" y2="6"/><line x1="6" y1="18" x2="6" y2="18"/></svg>
+                    <span>Configuration</span>
+                </div>
+                <div class="nav-item" id="nav-settings">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Paramètres</span>
+                </div>
+            </nav>
+            <!-- Update notification button (hidden until update is available) -->
+            <div id="update-banner" style="display:none; margin: 12px; padding: 0;">
+                <button id="btn-update" style="
+                    width: 100%; padding: 10px 14px; border-radius: 10px;
+                    border: none; cursor: pointer; font-family: inherit; font-size: 0.82rem; font-weight: 600;
+                    background: linear-gradient(135deg, #f59e0b, #ef4444);
+                    color: #fff; display: flex; align-items: center; gap: 8px;
+                    box-shadow: 0 4px 15px rgba(239,68,68,0.4);
+                    animation: pulse-update 2s ease-in-out infinite;
+                ">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    <span id="update-label">Mise à jour disponible !</span>
+                </button>
+            </div>
+            <div class="stats">
+                <div class="master-volume-section">
+                    <div class="master-volume-header">
+                        <label>Volume Général</label>
+                        <button id="btn-master-mute" title="Couper/Activer le son">
+                            <svg class="mute-icon-unmuted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                            <svg class="mute-icon-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                <line x1="23" y1="9" x2="17" y2="15"/>
+                                <line x1="17" y1="9" x2="23" y2="15"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="master-volume-slider-row">
+                        <input type="range" id="master-volume-slider" min="0" max="1" step="0.01" value="1">
+                        <span id="master-volume-val">100%</span>
+                    </div>
+                </div>
+
+                <div class="stat-item" style="margin-top: 12px;">
+                    <label>Latence</label>
+                    <span id="latency-val">-- ms</span>
+                </div>
+                <div class="stat-item">
+                    <label>CPU Audio</label>
+                    <span id="cpu-val">0%</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Routing View -->
+            <div id="view-routing" class="view active">
+                <header class="main-header">
+                    <div class="header-info">
+                        <h2>Configuration Audio</h2>
+                        <p>Gestion des sorties audio et effets.</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="split-button-container">
+                            <button id="test-outputs" class="btn-test-main">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span id="test-outputs-label">Tester Sorties</span>
+                            </button>
+                            <div class="split-button-divider"></div>
+                            <div class="split-button-dropdown" title="Changer de mode de test">
+                                <svg class="dropdown-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                                <select id="test-mode-select">
+                                    <option value="beats" selected>Beats (100 BPM)</option>
+                                    <option value="melody">Mélodie</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="add-route" class="btn-primary">
+                            <span class="plus-icon">+</span> Nouvelle Connexion
+                        </button>
+                    </div>
+                </header>
+
+                <section id="routing-grid" class="routing-grid">
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 16px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                        <h3>Prêt pour la configuration</h3>
+                        <p>Ajoutez un raccordement pour commencer.</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view">
+                <header class="main-header">
+                    <div class="header-info">
+                        <h2>Paramètres Système</h2>
+                        <p>Optimisez les performances et personnalisez l'expérience.</p>
+                    </div>
+                </header>
+
+                <section class="settings-container">
+                    <div class="settings-group driver-promo" id="driver-promo">
+                        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                            <div class="pro-badge">PRO</div>
+                            <h3 style="margin: 0;">Moteur Audio Avancé</h3>
+                        </div>
+                        <p style="opacity: 0.8; margin-bottom: 20px; line-height: 1.5;">
+                            Débloquez la capture système haute fidélité et le routage sans perte en installant le pilote AudioSplitter Core.
+                        </p>
+                        <button id="btn-install-driver" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Installer le Pilote Core
+                        </button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Performance Audio</h3>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Taux d'échantillonnage</label>
+                                <p>Recommandé : 48000 Hz pour la production.</p>
+                            </div>
+                            <select id="setting-sample-rate">
+                                <option value="auto" selected>Auto (Défaut Système)</option>
+                                <option value="44100">44100 Hz</option>
+                                <option value="48000">48000 Hz</option>
+                                <option value="96000">96000 Hz</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Priorité de Latence</label>
+                                <p>Impacte la charge CPU et la réactivité.</p>
+                            </div>
+                            <select id="setting-latency">
+                                <option value="interactive" selected>Interactive (Faible)</option>
+                                <option value="balanced">Équilibrée</option>
+                                <option value="playback">Lecture (Haute)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Interface</h3>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Thème Visuel</label>
+                                <p>Apparence globale de l'application.</p>
+                            </div>
+                            <select id="setting-theme">
+                                <option value="pro-dark">Pro Dark</option>
+                                <option value="midnight">Minuit Profond</option>
+                                <option value="slate">Ardoise Studio</option>
+                                <option value="cyberpunk">Cyberpunk Neon</option>
+                                <option value="forest">Forêt Boréale</option>
+                                <option value="monocle">Monocle (N&B)</option>
+                                <option value="sunset">Sunset Gold</option>
+                                <option value="ocean">Abysse Bleu</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Limites du Gain</label>
+                                <p>Valeur maximum autorisée sur le curseur.</p>
+                            </div>
+                            <input type="number" id="setting-gain-max" step="0.1" value="1.5" style="width: 80px;">
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Plage du Délai (ms)</label>
+                                <p>Min et Max pour la compensation de latence.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="setting-delay-min" step="10" value="-500" style="width: 80px;" title="Minimum">
+                                <input type="number" id="setting-delay-max" step="10" value="1000" style="width: 80px;" title="Maximum">
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Mode d'Affichage</label>
+                                <p>Organisation visuelle des contrôles.</p>
+                            </div>
+                            <select id="setting-display-mode">
+                                <option value="grid" selected>Grille (Standard)</option>
+                                <option value="list">Ligne (Compact)</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Disposition de la Grille</label>
+                                <p>Nombre de cartes par ligne.</p>
+                            </div>
+                            <select id="setting-grid-cols">
+                                <option value="1">1 colonne (Liste)</option>
+                                <option value="2">2 colonnes</option>
+                                <option value="3" selected>3 colonnes</option>
+                                <option value="4">4 colonnes</option>
+                                <option value="5">5 colonnes</option>
+                                <option value="auto">Automatique (Remplissage)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Réactivité des VU-mètres</label>
+                                <p>Vitesse de retombée des indicateurs.</p>
+                            </div>
+                            <input type="range" id="setting-vu-speed" min="0.5" max="0.99" step="0.01" value="0.9">
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Gestion des Extensions</h3>
+                        <p style="opacity: 0.8; margin-bottom: 16px; font-size: 0.9rem;">
+                            Importez de nouveaux thèmes ou effets audio en sélectionnant ou glissant un fichier .aspack ici.
+                        </p>
+                        <div id="drop-zone" class="drop-zone">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-blue); margin-bottom: 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <p style="margin: 0; font-size: 0.9rem;">Glissez-déposez un fichier <strong>.aspack</strong> ou cliquez pour parcourir</p>
+                            <input type="file" id="extension-file-input" accept=".aspack" style="display: none;">
+                        </div>
+                    </div>
+
+                    <div class="settings-group" id="installed-extensions-panel">
+                        <h3>Extensions Installées</h3>
+                        <p style="opacity: 0.8; margin-bottom: 16px; font-size: 0.9rem;">Gérez les thèmes et effets audio installés sur cet appareil.</p>
+                        <div id="installed-extensions-list">
+                            <p style="opacity: 0.5; font-size: 0.85rem; text-align:center; padding: 12px 0;">Aucune extension installée.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-group driver-installed-status" id="driver-installed-status" style="display: none;">
+                        <h3>Gestion du Pilote</h3>
+                        <div class="setting-item">
+                            <div class="setting-text">
+                                <label>Pilote Core Activé</label>
+                                <p>⚠️ Selectionnez "CABLE Input" comme périphérique de sortie sur votre ordinateur.</p>
+                            </div>
+                            <button id="btn-uninstall-driver" class="btn-danger-outline">
+                                Désinstaller le Pilote
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-group info-block">
+                        <h3>Informations d'Utilisation</h3>
+                        <div class="info-section">
+                            <h4>Délai Inversé (Compensation de Latence)</h4>
+                            <p>Le délai inversé permet de synchroniser des enceintes ayant des temps de réponse différents. En configurant une valeur négative (ex: -100 ms) sur un canal rapide, vous retardez en réalité toutes les autres sorties afin que le son parvienne en même temps aux oreilles de l'auditeur.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Avertissement Latence Sans Fil</h4>
+                            <p>⚠️ Les périphériques Bluetooth et réseau introduisent une latence variable selon la distance de l'enceinte, les obstacles et les interférences. Si vous déplacez un haut-parleur Bluetooth, prévoyez de réajuster sa compensation de délai.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Extensions & Personnalisation</h4>
+                            <p>Importez des thèmes visuels personnalisés ou de nouveaux types de filtres et effets audio en glissant un fichier <strong>.aspack</strong> dans la zone de dépôt ci-dessus.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Canaux Gauche / Droit (L/R)</h4>
+                            <p>Les boutons L et R intégrés dans la boîte de choix du haut-parleur vous permettent de diriger le flux stéréo vers le canal gauche, droit, ou les deux (stéréo complète) sur chaque enceinte individuellement.</p>
+                        </div>
+                        <div class="info-section">
+                            <h4>Pilote Audio Splitter Core</h4>
+                            <p>Ce câble virtuel (VB-Cable) capture l'intégralité du flux audio sortant de votre système pour le rediriger sans perte vers AudioSplitter, d'où il peut être dupliqué et filtré vers vos enceintes physiques.</p>
+                        </div>
+                        <div class="info-section danger-section" style="border-left: 3px solid var(--danger); padding-left: 12px; margin-top: 16px;">
+                            <h4 style="color: var(--danger);">⚠️ Sécurité Auditive & Matérielle</h4>
+                            <p style="font-size: 0.85rem; opacity: 0.9;">L'exposition prolongée à des volumes élevés peut causer des lésions auditives irréversibles. Un gain trop élevé peut également saturer le signal (clipping) et endommager vos haut-parleurs. Ajustez les gains avec précaution.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-group version-block">
+                        <h3>Informations Système & Version</h3>
+                        <div class="version-details" style="font-size: 0.9rem; line-height: 1.6; opacity: 0.95;">
+                            <div><strong>Version :</strong> <span id="info-app-version">1.0.0</span></div>
+                            <div><strong>Créateur :</strong> Ibotweat Development</div>
+                            <div><strong>Build :</strong> Production Win32-x64</div>
+                            <div><strong>Licence :</strong> Licence propriétaire.</div>
+                            <div style="margin-top: 12px; font-size: 0.8rem; opacity: 0.6;">Copyright &copy; 2026 Ibotweat Development. Tous droits réservés.</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Template for Routing Card -->
+    <template id="routing-card-template">
+        <div class="routing-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <input type="text" value="Connexion sans nom" class="editable-title">
+                </div>
+                <button class="btn-remove" title="Supprimer">✕</button>
+            </div>
+            <div class="card-body">
+                <div class="selection-group">
+                    <label>Entrée (Stéréo)</label>
+                    <div class="select-wrapper no-channels">
+                        <select class="input-select">
+                            <option value="">Sélectionner une entrée...</option>
+                        </select>
+                        <div class="warning-icon-wrapper" style="display: none;"></div>
+                    </div>
+                    <div class="vu-meter input-vu">
+                        <div class="vu-bar left"></div>
+                        <div class="vu-bar right"></div>
+                    </div>
+                </div>
+
+                <div class="connector">
+                    <div class="line"></div>
+                    <button class="btn-effects-trigger" title="Effets audio">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                        <span>Effets</span>
+                    </button>
+                    <div class="arrow">↓</div>
+                </div>
+
+                <div class="selection-group output-section">
+                    <label>Sortie</label>
+                    <div class="outputs-list">
+                        <div class="output-row primary-output-row">
+                            <div class="select-wrapper">
+                                <select class="output-select">
+                                    <option value="">Sélectionner une sortie...</option>
+                                </select>
+                                <div class="warning-icon-wrapper" style="display: none;"></div>
+                                <div class="channel-controls">
+                                    <button class="channel-btn channel-L active" data-channel="L" title="Canal Gauche">L</button>
+                                    <button class="channel-btn channel-R active" data-channel="R" title="Canal Droit">R</button>
+                                </div>
+                            </div>
+                            <button class="btn-add-output" title="Ajouter une sortie">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vu-meter output-vu">
+                        <div class="vu-bar left"></div>
+                        <div class="vu-bar right"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="gain-control">
+                    <label>Gain</label>
+                    <input type="range" min="0" max="1.5" step="0.01" value="1.0" class="gain-slider" title="Double-clic pour réinitialiser à 0 dB">
+                    <span class="gain-val">0 dB</span>
+                </div>
+                <div class="delay-control">
+                    <label>Délai</label>
+                    <input type="range" min="0" max="2.0" step="0.01" value="0" class="delay-slider" title="Double-clic pour réinitialiser à 0 ms">
+                    <span class="delay-val">0 ms</span>
+                </div>
+            </div>
+            <div class="toggle-control">
+                <label class="switch">
+                    <input type="checkbox" checked class="route-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span>Actif</span>
+            </div>
+        </div>
+    </template>
+
+    <!-- Modal for Effects -->
+    <div id="effects-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Effets Audio</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="effects-sidebar">
+                    <div class="effect-option active" data-effect="equalizer">🎚️ Égaliseur (Défaut)</div>
+                    <div id="custom-effects-list"></div>
+                </div>
+                <div class="effect-settings-pane">
+                    <!-- Controls for active effect will be rendered here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
+

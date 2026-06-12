@@ -1,0 +1,174 @@
+# =====================================================================
+# AudioSplitter — .gitignore
+# Electron + Node.js (Windows)
+# =====================================================================
+
+# -----------------------------------------------------------------------
+# Node.js
+# -----------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.pnp
+.pnp.js
+.yarn/
+
+# -----------------------------------------------------------------------
+# Electron Build / Packaging outputs
+# -----------------------------------------------------------------------
+dist/
+out/
+build/
+release/
+release-builds/
+*.exe
+*.msi
+*.dmg
+*.pkg
+*.deb
+*.rpm
+*.AppImage
+*.snap
+*.nsis
+
+# electron-builder
+dist_electron/
+builder-debug.yml
+builder-effective-config.yaml
+.electron-builder.env
+
+# electron-forge
+.webpack/
+.vite/
+
+# -----------------------------------------------------------------------
+# Electron userData (auto-generated at runtime)
+# -----------------------------------------------------------------------
+userData/
+userdata/
+extensions/
+
+# -----------------------------------------------------------------------
+# Logs & diagnostics
+# -----------------------------------------------------------------------
+logs/
+*.log
+*.log.*
+crash-reports/
+*.dmp
+
+# -----------------------------------------------------------------------
+# Environment & secrets
+# -----------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# -----------------------------------------------------------------------
+# OS generated files
+# -----------------------------------------------------------------------
+
+# Windows
+Thumbs.db
+Thumbs.db:encstream
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+# Linux
+*~
+.nfs*
+
+# -----------------------------------------------------------------------
+# Editors & IDEs
+# -----------------------------------------------------------------------
+
+# VS Code (keep workspace settings if shared, ignore personal)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/*.code-snippets
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+*.eml
+
+# Vim / Emacs
+*.swp
+*.swo
+*.swn
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# -----------------------------------------------------------------------
+# Testing & coverage
+# -----------------------------------------------------------------------
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+.jest-cache/
+
+# -----------------------------------------------------------------------
+# Temporary files
+# -----------------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.orig
+*.cache
+.cache/
+tmp/
+temp/
+
+# -----------------------------------------------------------------------
+# Package locks — keep package-lock.json, ignore others
+# -----------------------------------------------------------------------
+yarn.lock
+pnpm-lock.yaml
+
+# -----------------------------------------------------------------------
+# Drivers folder (binary installers — track with Git LFS or exclude)
+# -----------------------------------------------------------------------
+
+# -----------------------------------------------------------------------
+# Development resources (plugins, themes en cours — usage interne only)
+# -----------------------------------------------------------------------
+development/
+
+# -----------------------------------------------------------------------
+# Drivers
+# L'installateur du pilote est distribué séparément (ex: en release GitHub).
+# Il n'a pas sa place dans le dépôt Git — gros binaires, installé par l'user.
+# -----------------------------------------------------------------------
+drivers/
+

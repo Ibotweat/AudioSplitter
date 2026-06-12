@@ -1,0 +1,52 @@
+{
+  "name": "audiosplitter",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ibotweat Development",
+  "license": "Proprietary",
+  "description": "AudioSplitter Application",
+  "devDependencies": {
+    "electron": "^42.0.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.ibotweatdevelopment.audiosplitter",
+    "productName": "AudioSplitter",
+    "icon": "logo.ico",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "drivers/**"
+    ],
+    "files": [
+      "**/*",
+      "!development/**/*",
+      "!dist/**/*",
+      "!README.md",
+      "!1000037381.png"
+    ],
+    "win": {
+      "icon": "logo.ico",
+      "target": ["nsis", "portable"]
+    },
+    "mac": {
+      "icon": "logo.icns",
+      "target": ["dmg"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "logo.ico",
+      "uninstallerIcon": "logo.ico",
+      "shortcutName": "AudioSplitter"
+    }
+  }
+}
