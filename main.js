@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, desktopCapturer, Menu, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, Menu, dialog, shell } = require('electron');
 const path = require('path');
 const { exec } = require('child_process');
 const fs = require('fs');
@@ -52,6 +52,11 @@ const runPowerShell = (command) => {
 
 
 ipcMain.handle('install-driver', async () => {
+    if (process.platform === 'darwin') {
+        shell.openExternal('https://vb-audio.com/Cable/');
+        return { success: true, openedBrowser: true };
+    }
+
     const installerPath = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'drivers', 'VBCABLE_Setup_x64.exe');
     console.log(`Lancement de l'installateur: ${installerPath}`);
     
@@ -80,6 +85,10 @@ ipcMain.handle('install-driver', async () => {
 });
 
 ipcMain.handle('uninstall-driver', async () => {
+    if (process.platform === 'darwin') {
+        return { success: false, error: "La désinstallation automatique n'est pas disponible sur macOS. Veuillez utiliser le programme de désinstallation inclus dans le fichier d'installation (.dmg) de VB-Cable." };
+    }
+
     const installerPath = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'drivers', 'VBCABLE_Setup_x64.exe');
     console.log(`Lancement du désinstallateur: ${installerPath}`);
     
@@ -428,11 +437,12 @@ ipcMain.handle('check-for-update', async () => {
             res.on('end', () => {
                 try {
                     const json = JSON.parse(data);
+                    const extension = process.platform === 'darwin' ? '.dmg' : '.exe';
                     resolve({
                         success: true,
                         latestVersion: json.tag_name ? json.tag_name.replace(/^v/, '') : null,
                         releaseUrl: json.html_url || null,
-                        downloadUrl: (json.assets || []).find(a => a.name.endsWith('.exe'))?.browser_download_url || null
+                        downloadUrl: (json.assets || []).find(a => a.name.endsWith(extension))?.browser_download_url || null
                     });
                 } catch(e) {
                     resolve({ success: false, error: 'Impossible de lire la réponse GitHub.' });
@@ -507,20 +517,30 @@ function downloadFile(url, destPath, onProgress) {
 
 // ─── Download and launch latest release installer ────────────────────────────
 ipcMain.handle('download-and-install-update', async (event, downloadUrl) => {
-    const tmpPath = path.join(os.tmpdir(), 'AudioSplitter-Update.exe');
+    const extension = process.platform === 'darwin' ? '.dmg' : '.exe';
+    const tmpPath = path.join(os.tmpdir(), `AudioSplitter-Update${extension}`);
 
     try {
         await downloadFile(downloadUrl, tmpPath, (percent) => {
             event.sender.send('update-download-progress', percent);
         });
 
-        // Launch installer with administrator privileges (UAC prompt)
-        const psCommand = `Start-Process -FilePath "${tmpPath}" -Verb RunAs`;
-        exec(`powershell -Command "${psCommand}"`, (err) => {
-            if (err) {
-                console.error("Erreur lors du lancement de l'installateur:", err);
-            }
-        });
+        if (process.platform === 'darwin') {
+            // Open the DMG file on macOS
+            exec(`open "${tmpPath}"`, (err) => {
+                if (err) {
+                    console.error("Erreur lors de l'ouverture du DMG :", err);
+                }
+            });
+        } else {
+            // Launch installer with administrator privileges (UAC prompt)
+            const psCommand = `Start-Process -FilePath "${tmpPath}" -Verb RunAs`;
+            exec(`powershell -Command "${psCommand}"`, (err) => {
+                if (err) {
+                    console.error("Erreur lors du lancement de l'installateur:", err);
+                }
+            });
+        }
 
         // Close the application immediately so files are not locked by the running process
         setTimeout(() => {

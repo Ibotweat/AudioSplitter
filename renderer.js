@@ -1114,7 +1114,7 @@ async function refreshDevices() {
         //   - input: "CABLE Output (VB-Audio Virtual Cable)"
         //   - output: "CABLE Input (VB-Audio Virtual Cable)"
         // Also support Voicemeeter, our own AudioSplitter branding, and a manual override.
-        const keywords = ['CABLE', 'VB-Audio', 'Voicemeeter', 'AudioSplitter'];
+        const keywords = ['CABLE', 'VB-Audio', 'Voicemeeter', 'AudioSplitter', 'BlackHole'];
         const allDetected = [...devices.inputs, ...devices.outputs];
         const isDriverInstalled =
             localStorage.getItem('as-driver-dismissed') === '1' ||
@@ -1216,8 +1216,14 @@ installDriverBtn.addEventListener('click', async () => {
     try {
         const result = await window.electron.installDriver();
         if (result.success) {
-            alert("L'installateur a été lancé ! Veuillez suivre les étapes à l'écran, puis redémarrez votre PC.");
-            installDriverBtn.innerHTML = '✅ Installateur lancé';
+            if (result.openedBrowser) {
+                alert("La page de téléchargement de VB-Cable pour Mac a été ouverte dans votre navigateur. Veuillez installer le pilote virtuel puis redémarrer votre ordinateur.");
+                installDriverBtn.innerHTML = 'Installer le Pilote Core';
+                installDriverBtn.disabled = false;
+            } else {
+                alert("L'installateur a été lancé ! Veuillez suivre les étapes à l'écran, puis redémarrez votre PC.");
+                installDriverBtn.innerHTML = '✅ Installateur lancé';
+            }
         } else {
             alert(`Erreur : ${result.error}`);
             installDriverBtn.disabled = false;
@@ -2443,6 +2449,13 @@ async function checkForAppUpdate() {
             versionEl.textContent = currentVersion;
         }
 
+        const buildEl = document.getElementById('info-app-build');
+        if (buildEl && typeof process !== 'undefined') {
+            const platform = (process.platform === 'darwin') ? 'macOS' : (process.platform === 'win32') ? 'Windows' : process.platform;
+            const arch = process.arch;
+            buildEl.textContent = `Production ${platform}-${arch}`;
+        }
+
         if (!result.success || !result.latestVersion) return;
 
         const isNewer = compareVersions(result.latestVersion, currentVersion) > 0;
@@ -2466,7 +2479,8 @@ const _updateBtn = document.getElementById('btn-update');
 if (_updateBtn) {
     _updateBtn.addEventListener('click', async () => {
         if (!_latestReleaseDownloadUrl) {
-            showToast('⚠️ Pas de fichier .exe trouvé dans la release. Ouvrez GitHub manuellement.');
+            const extension = (process.platform === 'darwin') ? '.dmg' : '.exe';
+            showToast(`⚠️ Pas de fichier ${extension} trouvé dans la release. Ouvrez GitHub manuellement.`);
             return;
         }
         _updateBtn.disabled = true;
